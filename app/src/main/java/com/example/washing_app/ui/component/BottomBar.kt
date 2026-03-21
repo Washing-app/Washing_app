@@ -12,14 +12,16 @@ import androidx.compose.material.icons.filled.*
 fun BottomBar(navController: NavHostController) {
 
     val items = listOf(
+        Screen.Booking,
         Screen.Machines,
-        Screen.Booking
+        Screen.Profile
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar {
+
         items.forEach { screen ->
 
             NavigationBarItem(
@@ -31,6 +33,7 @@ fun BottomBar(navController: NavHostController) {
                         popUpTo(navController.graph.startDestinationId) {
                             saveState = true
                         }
+
                         launchSingleTop = true
                         restoreState = true
                     }
@@ -39,8 +42,9 @@ fun BottomBar(navController: NavHostController) {
                 icon = {
                     Icon(
                         imageVector = when (screen) {
+                            Screen.Booking -> Icons.Default.CalendarMonth
                             Screen.Machines -> Icons.Default.Home
-                            Screen.Booking -> Icons.Default.DateRange
+                            Screen.Profile -> Icons.Default.AccountCircle
                             else -> Icons.Default.Home
                         },
                         contentDescription = screen.route
@@ -50,8 +54,9 @@ fun BottomBar(navController: NavHostController) {
                 label = {
                     Text(
                         when (screen) {
-                            Screen.Machines -> "Machines"
-                            Screen.Booking -> "Booking"
+                            Screen.Booking -> "Мои записи"
+                            Screen.Machines -> "Главная"
+                            Screen.Profile -> "Профиль"
                             else -> ""
                         }
                     )

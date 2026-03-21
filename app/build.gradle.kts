@@ -47,12 +47,14 @@ kotlin {
 
 dependencies {
     implementation(project(":data"))
+    implementation(project(":domain"))
     implementation(project(":feature:auth"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:machines"))
     implementation(project(":feature:booking"))
     implementation(project(":feature:payment"))
     implementation(project(":feature:qr"))
+    implementation(project(":feature:profile"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

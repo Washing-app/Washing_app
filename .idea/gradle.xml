@@ -22,6 +22,7 @@
             <option value="$PROJECT_DIR$/feature/booking" />
             <option value="$PROJECT_DIR$/feature/machines" />
             <option value="$PROJECT_DIR$/feature/payment" />
+            <option value="$PROJECT_DIR$/feature/profile" />
             <option value="$PROJECT_DIR$/feature/qr" />
           </set>
         </option>

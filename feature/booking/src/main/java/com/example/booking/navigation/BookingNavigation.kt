@@ -8,10 +8,6 @@ import com.example.navigation.Screen
 
 fun NavGraphBuilder.bookingGraph(navController: NavController) {
     composable(Screen.Booking.route) {
-        BookingScreen(
-            onPaymentClick = {
-                navController.navigate(Screen.Payment.route)
-            }
-        )
+        BookingScreen()
     }
 }

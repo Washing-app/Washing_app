@@ -7,11 +7,12 @@ import androidx.navigation.compose.NavHost
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
+    startDestination: String,
     builders: List<NavGraphBuilderProvider>
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Auth.route
+        startDestination = startDestination
     ) {
         builders.forEach { builder ->
             builder(this, navController)

@@ -1,12 +1,15 @@
 package com.example.data.repository
 
+import com.example.data.local.TokenStorage
 import com.example.data.remote.api.AuthApi
 import com.example.data.remote.dto.LoginRequest
 import com.example.domain.repository.AuthRepository
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val api: AuthApi
+    private val api: AuthApi,
+    private val storage: TokenStorage
 ) : AuthRepository {
 
     override suspend fun login(phone: String, password: String): Boolean {
@@ -14,9 +17,20 @@ class AuthRepositoryImpl @Inject constructor(
             val response = api.login(
                 LoginRequest(phone, password)
             )
-            response.token.isNotEmpty()
+
+            storage.saveToken(response.token) // 🔥 ВАЖНО
+
+            true
         } catch (e: Exception) {
             false
         }
+    }
+
+    override suspend fun isLoggedIn(): Boolean {
+        return storage.tokenFlow.first() != null
+    }
+
+    override suspend fun logout() {
+        storage.clearToken()
     }
 }
