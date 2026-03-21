@@ -1,12 +1,13 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.example.washing_app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.washing_app"
@@ -28,19 +29,30 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+}
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
 
 dependencies {
-
+    implementation(project(":data"))
+    implementation(project(":feature:auth"))
+    implementation(project(":core:navigation"))
+    implementation(project(":feature:machines"))
+    implementation(project(":feature:booking"))
+    implementation(project(":feature:payment"))
+    implementation(project(":feature:qr"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -56,9 +68,13 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.navigation.navigation.compose)
+    implementation (libs.androidx.material.icons.extended)
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
-    implementation(project(":feature-machines"))
-    implementation(project(":feature-booking"))
-    implementation(project(":feature-payment"))
-    implementation(project(":feature-qr"))
+    implementation(libs.hilt.navigation.compose)
+
+
 }

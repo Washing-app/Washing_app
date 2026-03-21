@@ -12,10 +12,17 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/core" />
-            <option value="$PROJECT_DIR$/feature-booking" />
-            <option value="$PROJECT_DIR$/feature-machines" />
-            <option value="$PROJECT_DIR$/feature-payment" />
-            <option value="$PROJECT_DIR$/feature-qr" />
+            <option value="$PROJECT_DIR$/core/common" />
+            <option value="$PROJECT_DIR$/core/navigation" />
+            <option value="$PROJECT_DIR$/core/ui" />
+            <option value="$PROJECT_DIR$/data" />
+            <option value="$PROJECT_DIR$/domain" />
+            <option value="$PROJECT_DIR$/feature" />
+            <option value="$PROJECT_DIR$/feature/auth" />
+            <option value="$PROJECT_DIR$/feature/booking" />
+            <option value="$PROJECT_DIR$/feature/machines" />
+            <option value="$PROJECT_DIR$/feature/payment" />
+            <option value="$PROJECT_DIR$/feature/qr" />
           </set>
         </option>
       </GradleProjectSettings>
