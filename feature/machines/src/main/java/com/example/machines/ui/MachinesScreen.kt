@@ -1,20 +1,112 @@
 package com.example.machines.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.domain.model.WashProgram
+import com.example.machines.ui.component.FiltersBottomSheet
+import com.example.machines.ui.component.MachineCard
 
 @Composable
 fun MachinesScreen(
-    onBookingClick: () -> Unit
+    onItemClick: (WashProgram) -> Unit
 ) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Button(onClick = onBookingClick) {
-            Text("Go to booking")
+    val viewModel: MachinesViewModel = hiltViewModel()
+
+    var showFilters by remember { mutableStateOf(false) }
+
+    Scaffold(
+        topBar = {
+            SearchTopBar(
+                onFilterClick = { showFilters = true }
+            )
+        }
+    ) { padding ->
+
+        Box(modifier = Modifier.padding(padding)) {
+            Text("Список видов стирки")
+        }
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            contentPadding = PaddingValues(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(viewModel.programs) { program ->
+                MachineCard(program, onItemClick)
+            }
         }
     }
+
+    if (showFilters) {
+        FiltersBottomSheet(
+            initialState = viewModel.filters,
+            onApply = { viewModel.applyFilters(it) },
+            onDismiss = { showFilters = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchTopBar(
+    onFilterClick: () -> Unit
+) {
+
+    var query by remember { mutableStateOf("") }
+
+    TopAppBar(
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Поиск...") },
+                    singleLine = true
+                )
+
+                Spacer(Modifier.width(8.dp))
+
+                IconButton(onClick = onFilterClick) {
+                    Icon(Icons.Default.FilterList, contentDescription = "Filters")
+                }
+            }
+        }
+    )
+}
+
+
+fun <T> Set<T>.toggle(item: T): Set<T> {
+    return if (contains(item)) minus(item) else plus(item)
 }

@@ -9,9 +9,13 @@ import com.example.navigation.Screen
 fun NavGraphBuilder.machinesGraph(navController: NavController) {
     composable(Screen.Machines.route) {
         MachinesScreen(
-            onBookingClick = {
-                navController.navigate(Screen.Booking.route)
+            onItemClick = {
+                navController.navigate("details")
             }
         )
+    }
+
+    composable("details") {
+        // заглушка
     }
 }
