@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.navigation.AppNavGraph
 import com.example.washing_app.ui.component.BottomBar
@@ -39,7 +41,6 @@ fun MainScreen() {
     val startDestination = viewModel.startDestination
 
     if (startDestination == null) {
-        // можно сделать splash или loader
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }

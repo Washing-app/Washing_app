@@ -1,6 +1,7 @@
 package com.example.domain.model
 
 data class WashProgram(
+    val id: String,
     val name: String,
     val durationMinutes: Int,
     val price: Int,
