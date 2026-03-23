@@ -46,21 +46,12 @@ kotlin {
 dependencies {
     implementation(project(":domain"))
     implementation(project(":core:navigation"))
-
-    // Compose
+    implementation(project(":core:ui"))
     implementation(libs.androidx.compose.bom)
-
     implementation(libs.androidx.compose.material3.material3)
-
-    // lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-
-    // navigation (для composable)
     implementation(libs.androidx.navigation.compose)
-
-    // корутины
     implementation(libs.kotlinx.coroutines.android)
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

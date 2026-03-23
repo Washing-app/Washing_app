@@ -8,7 +8,8 @@ data class WashProgramDto(
     val price: Int,
     val temperature: Int,
     val spinSpeed: Int,
-    val description: String
+    val description: String,
+    val imageLink: String?
 )
 
 fun WashProgramDto.toDomain() = WashProgram(
@@ -17,5 +18,6 @@ fun WashProgramDto.toDomain() = WashProgram(
     price = price,
     temperature = temperature,
     spinSpeed = spinSpeed,
-    description = description
+    description = description,
+    imageLink = imageLink
 )

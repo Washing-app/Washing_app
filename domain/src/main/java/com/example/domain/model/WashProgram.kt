@@ -6,5 +6,6 @@ data class WashProgram(
     val price: Int,
     val temperature: Int,
     val spinSpeed: Int,
-    val description: String
+    val description: String,
+    val imageLink: String?
 )

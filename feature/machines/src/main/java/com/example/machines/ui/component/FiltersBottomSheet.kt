@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -35,8 +36,11 @@ import com.example.machines.model.FilterState
 import com.example.machines.ui.toggle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.example.ui.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,6 +116,16 @@ fun FiltersBottomSheet(
                     value = minText,
                     onValueChange = { minText = it },
                     prefix = { Text("от ") },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = colorResource(R.color.input_background),
+                        unfocusedContainerColor = colorResource(R.color.input_background),
+                        disabledContainerColor = colorResource(R.color.input_background),
+
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
                     modifier = Modifier
                         .weight(1f)
                         .onFocusChanged { focusState ->
@@ -142,6 +156,16 @@ fun FiltersBottomSheet(
                     value = maxText,
                     onValueChange = { maxText = it },
                     prefix = { Text("до ") },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = colorResource(R.color.input_background),
+                        unfocusedContainerColor = colorResource(R.color.input_background),
+                        disabledContainerColor = colorResource(R.color.input_background),
+
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
                     modifier = Modifier
                         .weight(1f)
 

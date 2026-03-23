@@ -53,6 +53,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(project(":core:navigation"))
     implementation(project(":domain"))
+    implementation(project(":core:ui"))
     implementation(libs.androidx.compose.ui.ui2)
     implementation (libs.material3)
     implementation(libs.navigation.compose)
@@ -60,4 +61,6 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.coil.compose)
+
 }
