@@ -21,6 +21,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,8 +49,8 @@ fun FiltersBottomSheet(
     var speeds by remember { mutableStateOf(initialState.speeds) }
     var minText by remember { mutableStateOf(initialState.minDuration.toString()) }
     var maxText by remember { mutableStateOf(initialState.maxDuration.toString()) }
-    var minDuration by remember { mutableStateOf(initialState.minDuration) }
-    var maxDuration by remember { mutableStateOf(initialState.maxDuration) }
+    var minDuration by remember { mutableIntStateOf(initialState.minDuration) }
+    var maxDuration by remember { mutableIntStateOf(initialState.maxDuration) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -64,8 +65,21 @@ fun FiltersBottomSheet(
             ) {
                 Text("Фильтры", style = MaterialTheme.typography.titleLarge)
 
-                TextButton(onClick = onDismiss) {
-                    Text("Отмена")
+                TextButton(
+                    onClick = {
+                        val defaultFilters = FilterState()
+
+                        temps = defaultFilters.temperatures
+                        speeds = defaultFilters.speeds
+                        minDuration = defaultFilters.minDuration
+                        maxDuration = defaultFilters.maxDuration
+                        minText = minDuration.toString()
+                        maxText = maxDuration.toString()
+
+                        onApply(defaultFilters)
+                    }
+                ) {
+                    Text("Сбросить")
                 }
             }
 

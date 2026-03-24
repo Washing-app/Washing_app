@@ -1,13 +1,12 @@
 package com.example.machines.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -15,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,7 +44,6 @@ fun MachinesScreen(
     onItemClick: (WashProgram) -> Unit
 ) {
     val viewModel: MachinesViewModel = hiltViewModel()
-
     var showFilters by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -56,27 +55,51 @@ fun MachinesScreen(
         }
     ) { padding ->
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(
-                start = 8.dp,
-                end = 8.dp,
-                bottom = 8.dp,
-                top = padding.calculateTopPadding() + 8.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(viewModel.programs) { program ->
-                MachineCard(program, onItemClick)
+        when {
+            viewModel.isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            viewModel.errorMessage != null -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(viewModel.errorMessage ?: "Ошибка")
+                }
+            }
+
+            else -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(
+                        start = 8.dp,
+                        end = 8.dp,
+                        top = padding.calculateTopPadding(),
+                        bottom = padding.calculateBottomPadding() + 8.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(viewModel.filteredPrograms) { program ->
+                        MachineCard(program, onItemClick)
+                    }
+                }
             }
         }
-    }
+        }
 
     if (showFilters) {
         FiltersBottomSheet(
             initialState = viewModel.filters,
-            onApply = { viewModel.applyFilters(it) },
+            onApply = { newFilters ->
+                viewModel.applyFilters(newFilters)
+            },
             onDismiss = { showFilters = false }
         )
     }

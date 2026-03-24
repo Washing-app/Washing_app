@@ -27,20 +27,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.domain.model.Machine
+import androidx.compose.foundation.lazy.grid.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MachinesBottomSheet(
-    onApply: (Int) -> Unit,
+    machines: List<Machine>,
+    onApply: (Machine) -> Unit,
     onDismiss: () -> Unit
 ) {
 
-    var selectedMachine by remember { mutableStateOf<Int?>(null) }
+    var selectedMachine by remember { mutableStateOf<Machine?>(null) }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
-
         Column(Modifier.padding(16.dp)) {
-
             Text("Выбор машины")
 
             Spacer(Modifier.height(12.dp))
@@ -50,9 +51,8 @@ fun MachinesBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(8) { index ->
-
-                    val isSelected = selectedMachine == index
+                items(machines) { machine ->
+                    val isSelected = selectedMachine?.id == machine.id
 
                     Box(
                         modifier = Modifier
@@ -63,12 +63,12 @@ fun MachinesBottomSheet(
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clickable {
-                                selectedMachine = index
+                                selectedMachine = machine
                             },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "${index + 1}",
+                            text = machine.id.toString(),
                             color = if (isSelected) Color.White else Color.Black
                         )
                     }
@@ -79,9 +79,7 @@ fun MachinesBottomSheet(
 
             Button(
                 onClick = {
-                    selectedMachine?.let {
-                        onApply(it)
-                    }
+                    selectedMachine?.let(onApply)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = selectedMachine != null

@@ -18,60 +18,59 @@ class MachinesViewModel @Inject constructor(
     var programs by mutableStateOf<List<WashProgram>>(emptyList())
         private set
 
+    var filteredPrograms by mutableStateOf<List<WashProgram>>(emptyList())
+        private set
+
+    var filters by mutableStateOf(FilterState())
+        private set
+
+    var isLoading by mutableStateOf(false)
+        private set
+
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
+
     init {
         loadPrograms()
     }
 
     private fun loadPrograms() {
         viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
             try {
-                programs = repository.getPrograms()
+                val loadedPrograms = repository.getPrograms()
+                programs = loadedPrograms
+                filteredPrograms = applyFiltersToList(loadedPrograms, filters)
             } catch (e: Exception) {
-                println("ERROR: ${e.message}")
+                errorMessage = e.message ?: "Не удалось загрузить программы"
+            } finally {
+                isLoading = false
             }
         }
     }
 
-    var filters by mutableStateOf(FilterState())
-        private set
-
-    fun toggleTemperature(value: Int) {
-        filters = filters.copy(
-            temperatures = filters.temperatures.toggle(value)
-        )
-    }
-
-    fun toggleSpeed(value: Int) {
-        filters = filters.copy(
-            speeds = filters.speeds.toggle(value)
-        )
-    }
-
     fun applyFilters(newFilters: FilterState) {
         filters = newFilters
-    }
-    fun setMinDuration(value: Int) {
-        val newMin = value.coerceAtLeast(15)
-
-        filters = filters.copy(
-            minDuration = newMin,
-            maxDuration = maxOf(newMin, filters.maxDuration)
-        )
+        filteredPrograms = applyFiltersToList(programs, newFilters)
     }
 
-    fun setMaxDuration(value: Int) {
-        val newMax = value.coerceAtMost(165)
+    private fun applyFiltersToList(
+        source: List<WashProgram>,
+        filters: FilterState
+    ): List<WashProgram> {
+        return source.filter { program ->
 
-        filters = filters.copy(
-            maxDuration = newMax,
-            minDuration = minOf(filters.minDuration, newMax)
-        )
-    }
+            val matchesTemperature =
+                filters.temperatures.isEmpty() || program.temperature in filters.temperatures
 
-    fun setPreset(min: Int, max: Int) {
-        filters = filters.copy(
-            minDuration = min,
-            maxDuration = max
-        )
+            val matchesSpeed =
+                filters.speeds.isEmpty() || program.spinSpeed in filters.speeds
+
+            val matchesDuration =
+                program.durationMinutes in filters.minDuration..filters.maxDuration
+
+            matchesTemperature && matchesSpeed && matchesDuration
+        }
     }
 }

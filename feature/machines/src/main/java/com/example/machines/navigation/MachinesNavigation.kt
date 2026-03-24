@@ -17,7 +17,7 @@ fun NavGraphBuilder.machinesGraph(
 
         MachinesScreen(
             onItemClick = { program ->
-                navController.navigate("details/${program.id}")
+                navController.navigate(Screen.Details.createRoute(program.id))
             }
         )
     }
@@ -27,7 +27,7 @@ fun NavGraphBuilder.machinesGraph(
         arguments = listOf(navArgument("id") { type = NavType.StringType })
     ) { backStackEntry ->
 
-        val id = backStackEntry.arguments?.getString("id")!!
+        val id = backStackEntry.arguments?.getString("id")?: return@composable
 
         MachineDetailScreen(
             programId = id,
