@@ -14,7 +14,7 @@ data class WashProgramDto(
 )
 
 fun WashProgramDto.toDomain() = WashProgram(
-    id = id,
+    id = id.toLong(),
     name = name,
     durationMinutes = durationMinutes,
     price = price,

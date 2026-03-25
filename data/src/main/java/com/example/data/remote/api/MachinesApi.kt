@@ -1,9 +1,12 @@
 package com.example.data.remote.api
 
+import com.example.data.remote.dto.CreateBookingRequest
 import com.example.data.remote.dto.MachineDto
 import com.example.data.remote.dto.MachineSlotDto
 import com.example.data.remote.dto.WashProgramDto
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -22,4 +25,9 @@ interface MachinesApi {
         @Path("machineId") machineId: Long,
         @Query("date") date: String
     ): List<MachineSlotDto>
+
+    @POST("bookings")
+    suspend fun createBooking(
+        @Body request: CreateBookingRequest
+    )
 }

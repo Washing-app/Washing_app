@@ -53,6 +53,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(project(":core:navigation"))
     implementation(project(":domain"))
+    implementation(project(":data"))
     implementation(project(":core:ui"))
     implementation(libs.androidx.compose.ui.ui2)
     implementation (libs.material3)

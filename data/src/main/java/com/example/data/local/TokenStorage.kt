@@ -12,10 +12,12 @@ class TokenStorage(
 ) {
 
     private val TOKEN_KEY = stringPreferencesKey("token")
+    private val USER_ID_KEY = stringPreferencesKey("user_id")
 
-    suspend fun saveToken(token: String) {
+    suspend fun saveAuthData(token: String, userId: String) {
         context.dataStore.edit {
             it[TOKEN_KEY] = token
+            it[USER_ID_KEY] = userId
         }
     }
 
@@ -23,9 +25,14 @@ class TokenStorage(
         it[TOKEN_KEY]
     }
 
+    val userIdFlow = context.dataStore.data.map {
+        it[USER_ID_KEY]
+    }
+
     suspend fun clearToken() {
         context.dataStore.edit {
             it.remove(TOKEN_KEY)
+            it.remove(USER_ID_KEY)
         }
     }
 }

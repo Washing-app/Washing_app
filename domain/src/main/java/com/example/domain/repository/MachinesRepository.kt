@@ -10,4 +10,9 @@ interface MachinesRepository {
     suspend fun getProgramById(id: String): WashProgram?
     suspend fun getAvailableMachines(date: String): List<Machine>
     suspend fun getSlots(machineId: Long, date: String): List<MachineSlot>
+    suspend fun createBooking(
+        userId: String,
+        slotId: Long,
+        washTypeId: Long
+    )
 }

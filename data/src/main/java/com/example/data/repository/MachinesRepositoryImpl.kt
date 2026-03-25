@@ -1,6 +1,7 @@
 package com.example.data.repository
 
 import com.example.data.remote.api.MachinesApi
+import com.example.data.remote.dto.CreateBookingRequest
 import com.example.data.remote.dto.toDomain
 import com.example.domain.model.Machine
 import com.example.domain.model.MachineSlot
@@ -17,7 +18,7 @@ class MachinesRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getProgramById(id: String): WashProgram? {
-        return getPrograms().find { it.id == id }
+        return getPrograms().find { it.id == id.toLong() }
     }
 
     override suspend fun getAvailableMachines(date: String): List<Machine> {
@@ -26,5 +27,19 @@ class MachinesRepositoryImpl @Inject constructor(
 
     override suspend fun getSlots(machineId: Long, date: String): List<MachineSlot> {
         return api.getSlots(machineId, date).map { it.toDomain() }
+    }
+
+    override suspend fun createBooking(
+        userId: String,
+        slotId: Long,
+        washTypeId: Long
+    ) {
+        api.createBooking(
+            CreateBookingRequest(
+                userId = userId,
+                slotId = slotId,
+                washTypeId = washTypeId
+            )
+        )
     }
 }

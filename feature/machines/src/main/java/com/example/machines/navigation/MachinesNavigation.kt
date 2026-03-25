@@ -17,7 +17,7 @@ fun NavGraphBuilder.machinesGraph(
 
         MachinesScreen(
             onItemClick = { program ->
-                navController.navigate(Screen.Details.createRoute(program.id))
+                navController.navigate(Screen.Details.createRoute(program.id.toString()))
             }
         )
     }
