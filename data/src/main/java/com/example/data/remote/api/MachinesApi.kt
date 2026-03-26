@@ -23,7 +23,8 @@ interface MachinesApi {
     @GET("machines/{machineId}/slots")
     suspend fun getSlots(
         @Path("machineId") machineId: Long,
-        @Query("date") date: String
+        @Query("date") date: String,
+        @Query("washTypeId") washTypeId: Long
     ): List<MachineSlotDto>
 
     @POST("bookings")

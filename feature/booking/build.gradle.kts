@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -51,7 +53,12 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(project(":core:navigation"))
     implementation(project(":core:ui"))
+    implementation(project(":domain"))
     implementation(libs.androidx.compose.ui.ui2)
     implementation (libs.material3)
     implementation(libs.navigation.compose)
+    implementation (libs.androidx.material.icons.extended)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 }

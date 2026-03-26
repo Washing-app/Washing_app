@@ -10,13 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.navigation.AppNavGraph
 import com.example.washing_app.ui.component.BottomBar
 import com.example.machines.navigation.machinesGraph
-import com.example.booking.navigation.bookingGraph
+import com.example.booking.navigation.bookingsGraph
 import com.example.navigation.NavGraphBuilderProvider
 import com.example.payment.navigation.paymentGraph
 import com.example.qr.navigation.qrGraph
@@ -30,7 +28,7 @@ fun MainScreen() {
     val graphs: List<NavGraphBuilderProvider> = listOf(
         { builder, controller -> builder.authGraph(controller) },
         { builder, controller -> builder.machinesGraph(controller) },
-        { builder, controller -> builder.bookingGraph(controller) },
+        { builder, controller -> builder.bookingsGraph(controller) },
         { builder, controller -> builder.profileGraph(controller) },
         { builder, controller -> builder.paymentGraph(controller) },
         { builder, controller -> builder.qrGraph(controller) }

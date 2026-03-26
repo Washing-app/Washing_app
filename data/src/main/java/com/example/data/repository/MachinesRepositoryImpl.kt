@@ -25,8 +25,12 @@ class MachinesRepositoryImpl @Inject constructor(
         return api.getAvailableMachines(date).map { it.toDomain() }
     }
 
-    override suspend fun getSlots(machineId: Long, date: String): List<MachineSlot> {
-        return api.getSlots(machineId, date).map { it.toDomain() }
+    override suspend fun getSlots(
+        machineId: Long,
+        date: String,
+        washTypeId: Long
+    ): List<MachineSlot> {
+        return api.getSlots(machineId, date, washTypeId).map { it.toDomain() }
     }
 
     override suspend fun createBooking(

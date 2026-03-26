@@ -12,7 +12,7 @@ import androidx.compose.material.icons.filled.*
 fun BottomBar(navController: NavHostController) {
 
     val items = listOf(
-        Screen.Booking,
+        Screen.Bookings,
         Screen.Machines,
         Screen.Profile
     )
@@ -42,7 +42,7 @@ fun BottomBar(navController: NavHostController) {
                 icon = {
                     Icon(
                         imageVector = when (screen) {
-                            Screen.Booking -> Icons.Default.CalendarMonth
+                            Screen.Bookings -> Icons.Default.CalendarMonth
                             Screen.Machines -> Icons.Default.Home
                             Screen.Profile -> Icons.Default.AccountCircle
                             else -> Icons.Default.Home
@@ -54,7 +54,7 @@ fun BottomBar(navController: NavHostController) {
                 label = {
                     Text(
                         when (screen) {
-                            Screen.Booking -> "Мои записи"
+                            Screen.Bookings -> "Мои записи"
                             Screen.Machines -> "Главная"
                             Screen.Profile -> "Профиль"
                             else -> ""

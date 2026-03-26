@@ -100,11 +100,12 @@ class MachineDetailViewModel @Inject constructor(
     }
 
     private fun loadSlots(machineId: Long, date: String) {
+        val washTypeId = program?.id ?: return
         viewModelScope.launch {
             isLoadingSlots = true
             errorMessage = null
             try {
-                slots = repository.getSlots(machineId, date)
+                slots = repository.getSlots(machineId, date,washTypeId)
             } catch (e: HttpException) {
                 errorMessage = "Ошибка сервера: ${e.code()}"
             } catch (e: Exception) {
