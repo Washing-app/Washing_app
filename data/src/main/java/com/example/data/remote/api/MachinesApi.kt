@@ -3,6 +3,8 @@ package com.example.data.remote.api
 import com.example.data.remote.dto.CreateBookingRequest
 import com.example.data.remote.dto.MachineDto
 import com.example.data.remote.dto.MachineSlotDto
+import com.example.data.remote.dto.PrepareBookingRequest
+import com.example.data.remote.dto.PrepareBookingResponse
 import com.example.data.remote.dto.WashProgramDto
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -26,6 +28,11 @@ interface MachinesApi {
         @Query("date") date: String,
         @Query("washTypeId") washTypeId: Long
     ): List<MachineSlotDto>
+
+    @POST("bookings/prepare")
+    suspend fun prepareBooking(
+        @Body request: PrepareBookingRequest
+    ): PrepareBookingResponse
 
     @POST("bookings")
     suspend fun createBooking(

@@ -219,18 +219,34 @@ fun MachineDetailScreen(
             onDismiss = { showMachines = false }
         )
     }
-    viewModel.bookingConfirmation?.let { confirmation ->
+    viewModel.bookingFinishUi?.let { ui ->
         BookingConfirmationSheet(
-            confirmation = confirmation,
-            onClose = {
-                viewModel.dismissBookingConfirmation()
+            ui = ui,
+            onCloseToMain = {
+                viewModel.dismissBookingFinishUi()
                 navController.navigate(Screen.Machines.route) {
                     popUpTo(Screen.Machines.route) { inclusive = false }
                     launchSingleTop = true
                 }
             },
-            onBackToMain = {
-                viewModel.dismissBookingConfirmation()
+            onPayNow = {
+                viewModel.createPaidBookingAndOpenPayment {
+                    navController.navigate(Screen.Payment.route)
+                }
+            },
+            onPayLater = {
+                viewModel.createPaidLaterBookingAndGoHome {
+                    navController.navigate(Screen.Machines.route) {
+                        popUpTo(Screen.Machines.route) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            },
+            onPayExisting = {
+                navController.navigate(Screen.Payment.route)
+            },
+            onReturn = {
+                viewModel.dismissBookingFinishUi()
                 navController.navigate(Screen.Machines.route) {
                     popUpTo(Screen.Machines.route) { inclusive = false }
                     launchSingleTop = true
@@ -239,6 +255,7 @@ fun MachineDetailScreen(
         )
     }
 }
+
 
 fun formatTime(dateTime: String): String {
     return try {

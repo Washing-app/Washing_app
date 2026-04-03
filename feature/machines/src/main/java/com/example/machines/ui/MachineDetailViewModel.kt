@@ -55,6 +55,9 @@ class MachineDetailViewModel @Inject constructor(
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
+    var bookingFinishUi by mutableStateOf<BookingFinishUi?>(null)
+        private set
+
     fun loadProgram(id: String) {
         viewModelScope.launch {
             try {
@@ -130,15 +133,48 @@ class MachineDetailViewModel @Inject constructor(
         viewModelScope.launch {
             isBooking = true
             try {
-                val userId = storage.userIdFlow.firstOrNull() ?: return@launch
-
-                repository.createBooking(
-                    userId = userId,
+                val prepare = repository.prepareBooking(
                     slotId = currentSlot.id,
                     washTypeId = currentProgram.id
                 )
 
-                bookingConfirmation = BookingConfirmationUi(
+                if (prepare.blockedByUnpaidBooking) {
+                    bookingFinishUi = BookingFinishUi(
+                        mode = BookingFinishMode.BLOCKED_BY_UNPAID,
+                        bookingIdForPayment = prepare.existingUnpaidBookingId,
+                        date = currentDate,
+                        time = formatTime(currentSlot.startTime),
+                        machineName = currentMachine.name,
+                        washTypeName = currentProgram.name,
+                        price = currentProgram.price
+                    )
+                    return@launch
+                }
+
+                if (!prepare.paymentRequired) {
+                    repository.createBooking(
+                        slotId = currentSlot.id,
+                        washTypeId = currentProgram.id
+                    )
+
+                    bookingFinishUi = BookingFinishUi(
+                        mode = BookingFinishMode.FREE_SUCCESS,
+                        bookingIdForPayment = null,
+                        date = currentDate,
+                        time = formatTime(currentSlot.startTime),
+                        machineName = currentMachine.name,
+                        washTypeName = currentProgram.name,
+                        price = currentProgram.price
+                    )
+
+                    loadSlots(currentMachine.id, currentDate)
+                    selectedSlot = null
+                    return@launch
+                }
+
+                bookingFinishUi = BookingFinishUi(
+                    mode = BookingFinishMode.PAY_CHOICE,
+                    bookingIdForPayment = null,
                     date = currentDate,
                     time = formatTime(currentSlot.startTime),
                     machineName = currentMachine.name,
@@ -146,16 +182,59 @@ class MachineDetailViewModel @Inject constructor(
                     price = currentProgram.price
                 )
 
-                loadSlots(currentMachine.id, currentDate)
-                selectedSlot = null
-
             } catch (_: Exception) {
-
             } finally {
                 isBooking = false
             }
         }
     }
+
+    fun createPaidLaterBookingAndGoHome(onDone: () -> Unit) {
+        val currentProgram = program ?: return
+        val currentSlot = selectedSlot ?: return
+        val currentMachine = selectedMachine ?: return
+        val currentDate = selectedDate ?: return
+
+        viewModelScope.launch {
+            try {
+                repository.createBooking(
+                    slotId = currentSlot.id,
+                    washTypeId = currentProgram.id
+                )
+                loadSlots(currentMachine.id, currentDate)
+                selectedSlot = null
+                bookingFinishUi = null
+                onDone()
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun createPaidBookingAndOpenPayment(onDone: () -> Unit) {
+        val currentProgram = program ?: return
+        val currentSlot = selectedSlot ?: return
+        val currentMachine = selectedMachine ?: return
+        val currentDate = selectedDate ?: return
+
+        viewModelScope.launch {
+            try {
+                repository.createBooking(
+                    slotId = currentSlot.id,
+                    washTypeId = currentProgram.id
+                )
+                loadSlots(currentMachine.id, currentDate)
+                selectedSlot = null
+                bookingFinishUi = null
+                onDone()
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun dismissBookingFinishUi() {
+        bookingFinishUi = null
+    }
+
     fun dismissBookingConfirmation() {
         bookingConfirmation = null
     }

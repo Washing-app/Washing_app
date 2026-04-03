@@ -2,9 +2,11 @@ package com.example.data.repository
 
 import com.example.data.remote.api.MachinesApi
 import com.example.data.remote.dto.CreateBookingRequest
+import com.example.data.remote.dto.PrepareBookingRequest
 import com.example.data.remote.dto.toDomain
 import com.example.domain.model.Machine
 import com.example.domain.model.MachineSlot
+import com.example.domain.model.PrepareBookingResult
 import com.example.domain.model.WashProgram
 import com.example.domain.repository.MachinesRepository
 import javax.inject.Inject
@@ -33,14 +35,24 @@ class MachinesRepositoryImpl @Inject constructor(
         return api.getSlots(machineId, date, washTypeId).map { it.toDomain() }
     }
 
+    override suspend fun prepareBooking(
+        slotId: Long,
+        washTypeId: Long
+    ): PrepareBookingResult {
+        return api.prepareBooking(
+            PrepareBookingRequest(
+                slotId = slotId,
+                washTypeId = washTypeId
+            )
+        ).toDomain()
+    }
+
     override suspend fun createBooking(
-        userId: String,
         slotId: Long,
         washTypeId: Long
     ) {
         api.createBooking(
             CreateBookingRequest(
-                userId = userId,
                 slotId = slotId,
                 washTypeId = washTypeId
             )

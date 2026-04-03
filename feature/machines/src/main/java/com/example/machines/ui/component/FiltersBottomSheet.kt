@@ -144,7 +144,7 @@ fun FiltersBottomSheet(
                                     else -> value
                                 }
 
-                                if (minDuration > maxDuration) {
+                                if (minDuration >= maxDuration) {
                                     maxDuration = minDuration
                                     maxText = maxDuration.toString()
                                 }
@@ -185,7 +185,7 @@ fun FiltersBottomSheet(
                                     else -> value
                                 }
 
-                                if (maxDuration < minDuration) {
+                                if (maxDuration <= minDuration) {
                                     maxDuration = minDuration
                                 }
 

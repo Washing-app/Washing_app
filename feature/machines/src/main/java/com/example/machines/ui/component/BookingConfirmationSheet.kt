@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -23,17 +24,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.machines.ui.BookingConfirmationUi
+import com.example.machines.ui.BookingFinishMode
+import com.example.machines.ui.BookingFinishUi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingConfirmationSheet(
-    confirmation: BookingConfirmationUi,
-    onClose: () -> Unit,
-    onBackToMain: () -> Unit
+    ui: BookingFinishUi,
+    onCloseToMain: () -> Unit,
+    onPayNow: () -> Unit,
+    onPayLater: () -> Unit,
+    onPayExisting: () -> Unit,
+    onReturn: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = {},
@@ -51,14 +55,11 @@ fun BookingConfirmationSheet(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "Запись",
-                            style = MaterialTheme.typography.titleLarge
-                        )
+                        Text("Запись")
                     }
                 },
                 actions = {
-                    IconButton(onClick = onClose) {
+                    IconButton(onClick = onCloseToMain) {
                         Icon(Icons.Default.Close, contentDescription = "Закрыть")
                     }
                 }
@@ -70,27 +71,59 @@ fun BookingConfirmationSheet(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Дата: ${confirmation.date}")
-                Text("Время: ${confirmation.time}")
-                Text("Стиральная машина: ${confirmation.machineName}")
-                Text("Тип стирки: ${confirmation.washTypeName}")
-                Text("Стоимость: ${confirmation.price} ₽")
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                Text(
-                    text = "Не забудьте оплатить свою стирку",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Text("Дата: ${ui.date}")
+                Text("Время: ${ui.time}")
+                Text("Стиральная машина: ${ui.machineName}")
+                Text("Тип стирки: ${ui.washTypeName}")
+                Text("Стоимость: ${ui.price} ₽")
+                Text("Не забудьте оплатить свою стирку")
             }
 
-            Button(
-                onClick = onBackToMain,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text("Вернуться")
+            when (ui.mode) {
+                BookingFinishMode.FREE_SUCCESS -> {
+                    Button(
+                        onClick = onReturn,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text("Вернуться")
+                    }
+                }
+
+                BookingFinishMode.PAY_CHOICE -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = onPayNow,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Оплатить сразу")
+                        }
+
+                        OutlinedButton(
+                            onClick = onPayLater,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Оплатить позже")
+                        }
+                    }
+                }
+
+                BookingFinishMode.BLOCKED_BY_UNPAID -> {
+                    Button(
+                        onClick = onPayExisting,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text("Оплатить")
+                    }
+                }
             }
         }
     }

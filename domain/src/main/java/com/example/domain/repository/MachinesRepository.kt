@@ -2,6 +2,7 @@ package com.example.domain.repository
 
 import com.example.domain.model.Machine
 import com.example.domain.model.MachineSlot
+import com.example.domain.model.PrepareBookingResult
 import com.example.domain.model.WashProgram
 
 
@@ -14,8 +15,12 @@ interface MachinesRepository {
         date: String,
         washTypeId: Long
     ): List<MachineSlot>
+    suspend fun prepareBooking(
+        slotId: Long,
+        washTypeId: Long
+    ): PrepareBookingResult
+
     suspend fun createBooking(
-        userId: String,
         slotId: Long,
         washTypeId: Long
     )
