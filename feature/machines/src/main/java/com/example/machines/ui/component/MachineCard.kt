@@ -24,14 +24,24 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.domain.model.WashProgram
 import com.example.ui.R
+import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import coil.compose.SubcomposeAsyncImage
+import coil.request.CachePolicy
 
 @Composable
 fun MachineCard(
     program: WashProgram,
     onClick: (WashProgram) -> Unit
 ) {
+    val context = LocalContext.current
     Card(
         border = BorderStroke(
             width = 1.dp,
@@ -50,13 +60,36 @@ fun MachineCard(
         Box(modifier = Modifier
             .fillMaxSize()) {
 
-            AsyncImage(
-                model = program.imageLink,
-                contentDescription = null,
+            Image(
+                painter = painterResource(id = getProgramImageRes(program.name)),
+                contentDescription = program.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .matchParentSize()
+                modifier = Modifier.matchParentSize()
             )
+
+//            AsyncImage(
+//                model = ImageRequest.Builder(LocalContext.current)
+//                    .data(program.imageLink)
+//                    .crossfade(true)
+//                    .listener(
+//                        onStart = {
+//                            Log.d("COIL_IMAGE", "start url=${program.imageLink}")
+//                        },
+//                        onSuccess = { _, _ ->
+//                            Log.d("COIL_IMAGE", "success url=${program.imageLink}")
+//                        },
+//                        onError = { _, result ->
+//                            Log.e("COIL_IMAGE", "error url=${program.imageLink}", result.throwable)
+//                        },
+//                        onCancel = {
+//                            Log.w("COIL_IMAGE", "cancel url=${program.imageLink}")
+//                        }
+//                    )
+//                    .build(),
+//                contentDescription = program.name,
+//                modifier = Modifier.matchParentSize(),
+//                contentScale = ContentScale.Crop,
+//            )
 
             Box(
                 modifier = Modifier
@@ -102,4 +135,21 @@ fun MachineCard(
         }
     }
 }
+}
+
+fun getProgramImageRes(programName: String): Int {
+    return when (programName) {
+        "Хлопок" -> com.example.machines.R.drawable.wash_cotton
+        "Синтетика" -> com.example.machines.R.drawable.wash_synthetic
+        "Смешанное белье" -> com.example.machines.R.drawable.wash_mix
+        "Тонкое белье / шелк" -> com.example.machines.R.drawable.wash_silk
+        "Шерсть" -> com.example.machines.R.drawable.wash_wool
+        "Полоскание / отжим" -> com.example.machines.R.drawable.wash_spin
+        "Супер 15" -> com.example.machines.R.drawable.wash_super_15
+        "Темное белье" -> com.example.machines.R.drawable.wash_dark
+        "Чувствительная" -> com.example.machines.R.drawable.wash_sensitive
+        "Женское белье" -> com.example.machines.R.drawable.wash_women_underwear
+        "Рубашки / бизнес" -> com.example.machines.R.drawable.wash_shirt
+        else -> com.example.machines.R.drawable.wash_mix
+    }
 }

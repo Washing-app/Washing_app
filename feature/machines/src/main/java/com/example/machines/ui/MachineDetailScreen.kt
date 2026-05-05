@@ -190,9 +190,12 @@ fun MachineDetailScreen(
                             val localDate = Instant.ofEpochMilli(millis)
                                 .atZone(ZoneId.systemDefault())
                                 .toLocalDate()
-                                .toString()
 
-                            viewModel.selectDate(localDate)
+                            val formatted = localDate.format(
+                                java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                            )
+
+                            viewModel.selectDate(formatted)
                         }
                         showDatePicker = false
                     }
@@ -222,7 +225,7 @@ fun MachineDetailScreen(
     viewModel.bookingFinishUi?.let { ui ->
         BookingConfirmationSheet(
             ui = ui,
-            onCloseToMain = {
+            onCancelConfirmed = {
                 viewModel.dismissBookingFinishUi()
                 navController.navigate(Screen.Machines.route) {
                     popUpTo(Screen.Machines.route) { inclusive = false }
@@ -230,12 +233,18 @@ fun MachineDetailScreen(
                 }
             },
             onPayNow = {
-                viewModel.createPaidBookingAndOpenPayment {
-                    navController.navigate(Screen.Payment.route)
+                val existingBookingId = ui.bookingIdForPayment
+
+                if (existingBookingId != null) {
+                    navController.navigate(Screen.Payment.createRoute(existingBookingId))
+                } else {
+                    viewModel.createPaidBookingAndOpenPayment { bookingId ->
+                        navController.navigate(Screen.Payment.createRoute(bookingId))
+                    }
                 }
             },
             onPayLater = {
-                viewModel.createPaidLaterBookingAndGoHome {
+                viewModel.finishFirstBookingAndGoHome {
                     navController.navigate(Screen.Machines.route) {
                         popUpTo(Screen.Machines.route) { inclusive = false }
                         launchSingleTop = true
@@ -243,14 +252,8 @@ fun MachineDetailScreen(
                 }
             },
             onPayExisting = {
-                navController.navigate(Screen.Payment.route)
-            },
-            onReturn = {
-                viewModel.dismissBookingFinishUi()
-                navController.navigate(Screen.Machines.route) {
-                    popUpTo(Screen.Machines.route) { inclusive = false }
-                    launchSingleTop = true
-                }
+                val existingBookingId = ui.bookingIdForPayment ?: return@BookingConfirmationSheet
+                navController.navigate(Screen.Payment.createRoute(existingBookingId))
             }
         )
     }

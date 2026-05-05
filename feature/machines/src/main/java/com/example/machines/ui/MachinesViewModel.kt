@@ -24,6 +24,9 @@ class MachinesViewModel @Inject constructor(
     var filters by mutableStateOf(FilterState())
         private set
 
+    var searchQuery by mutableStateOf("")
+        private set
+
     var isLoading by mutableStateOf(false)
         private set
 
@@ -38,10 +41,11 @@ class MachinesViewModel @Inject constructor(
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
+
             try {
                 val loadedPrograms = repository.getPrograms()
                 programs = loadedPrograms
-                filteredPrograms = applyFiltersToList(loadedPrograms, filters)
+                updateFilteredPrograms()
             } catch (e: Exception) {
                 errorMessage = e.message ?: "Не удалось загрузить программы"
             } finally {
@@ -52,13 +56,29 @@ class MachinesViewModel @Inject constructor(
 
     fun applyFilters(newFilters: FilterState) {
         filters = newFilters
-        filteredPrograms = applyFiltersToList(programs, newFilters)
+        updateFilteredPrograms()
+    }
+
+    fun onSearchQueryChange(newQuery: String) {
+        searchQuery = newQuery
+        updateFilteredPrograms()
+    }
+
+    private fun updateFilteredPrograms() {
+        filteredPrograms = applyFiltersToList(
+            source = programs,
+            filters = filters,
+            query = searchQuery
+        )
     }
 
     private fun applyFiltersToList(
         source: List<WashProgram>,
-        filters: FilterState
+        filters: FilterState,
+        query: String
     ): List<WashProgram> {
+        val normalizedQuery = query.trim().lowercase()
+
         return source.filter { program ->
 
             val matchesTemperature =
@@ -70,7 +90,12 @@ class MachinesViewModel @Inject constructor(
             val matchesDuration =
                 program.durationMinutes in filters.minDuration..filters.maxDuration
 
-            matchesTemperature && matchesSpeed && matchesDuration
+            val matchesQuery =
+                normalizedQuery.isBlank() ||
+                        program.name.lowercase().contains(normalizedQuery)
+                        || program.description.lowercase().contains(normalizedQuery)
+
+            matchesTemperature && matchesSpeed && matchesDuration && matchesQuery
         }
     }
 }

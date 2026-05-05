@@ -23,5 +23,5 @@ interface MachinesRepository {
     suspend fun createBooking(
         slotId: Long,
         washTypeId: Long
-    )
+    ): String
 }

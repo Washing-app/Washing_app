@@ -11,10 +11,9 @@ import com.example.domain.model.MachineSlot
 import com.example.domain.model.WashProgram
 import com.example.domain.repository.MachinesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import retrofit2.HttpException
+import javax.inject.Inject
 
 @HiltViewModel
 class MachineDetailViewModel @Inject constructor(
@@ -158,7 +157,7 @@ class MachineDetailViewModel @Inject constructor(
                     )
 
                     bookingFinishUi = BookingFinishUi(
-                        mode = BookingFinishMode.FREE_SUCCESS,
+                        mode = BookingFinishMode.FIRST_BOOKING,
                         bookingIdForPayment = null,
                         date = currentDate,
                         time = formatTime(currentSlot.startTime),
@@ -173,7 +172,7 @@ class MachineDetailViewModel @Inject constructor(
                 }
 
                 bookingFinishUi = BookingFinishUi(
-                    mode = BookingFinishMode.PAY_CHOICE,
+                    mode = BookingFinishMode.REQUIRE_PAYMENT,
                     bookingIdForPayment = null,
                     date = currentDate,
                     time = formatTime(currentSlot.startTime),
@@ -189,28 +188,13 @@ class MachineDetailViewModel @Inject constructor(
         }
     }
 
-    fun createPaidLaterBookingAndGoHome(onDone: () -> Unit) {
-        val currentProgram = program ?: return
-        val currentSlot = selectedSlot ?: return
-        val currentMachine = selectedMachine ?: return
-        val currentDate = selectedDate ?: return
-
-        viewModelScope.launch {
-            try {
-                repository.createBooking(
-                    slotId = currentSlot.id,
-                    washTypeId = currentProgram.id
-                )
-                loadSlots(currentMachine.id, currentDate)
-                selectedSlot = null
-                bookingFinishUi = null
-                onDone()
-            } catch (_: Exception) {
-            }
-        }
+    fun finishFirstBookingAndGoHome(onDone: () -> Unit) {
+        bookingFinishUi = null
+        selectedSlot = null
+        onDone()
     }
 
-    fun createPaidBookingAndOpenPayment(onDone: () -> Unit) {
+    fun createPaidBookingAndOpenPayment(onDone: (String) -> Unit) {
         val currentProgram = program ?: return
         val currentSlot = selectedSlot ?: return
         val currentMachine = selectedMachine ?: return
@@ -218,14 +202,14 @@ class MachineDetailViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                repository.createBooking(
+                val bookingId = repository.createBooking(
                     slotId = currentSlot.id,
                     washTypeId = currentProgram.id
                 )
                 loadSlots(currentMachine.id, currentDate)
                 selectedSlot = null
                 bookingFinishUi = null
-                onDone()
+                onDone(bookingId)
             } catch (_: Exception) {
             }
         }

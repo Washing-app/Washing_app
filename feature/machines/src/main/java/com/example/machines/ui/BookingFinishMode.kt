@@ -1,7 +1,7 @@
 package com.example.machines.ui
 
 enum class BookingFinishMode {
-    FREE_SUCCESS,
-    PAY_CHOICE,
+    FIRST_BOOKING,
+    REQUIRE_PAYMENT,
     BLOCKED_BY_UNPAID
 }

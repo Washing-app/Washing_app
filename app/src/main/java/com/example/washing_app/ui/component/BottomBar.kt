@@ -14,6 +14,7 @@ fun BottomBar(navController: NavHostController) {
     val items = listOf(
         Screen.Bookings,
         Screen.Machines,
+        Screen.Qr,
         Screen.Profile
     )
 
@@ -44,6 +45,7 @@ fun BottomBar(navController: NavHostController) {
                         imageVector = when (screen) {
                             Screen.Bookings -> Icons.Default.CalendarMonth
                             Screen.Machines -> Icons.Default.Home
+                            Screen.Qr -> Icons.Default.QrCode
                             Screen.Profile -> Icons.Default.AccountCircle
                             else -> Icons.Default.Home
                         },
@@ -56,6 +58,7 @@ fun BottomBar(navController: NavHostController) {
                         when (screen) {
                             Screen.Bookings -> "Мои записи"
                             Screen.Machines -> "Главная"
+                            Screen.Qr -> "QR"
                             Screen.Profile -> "Профиль"
                             else -> ""
                         }

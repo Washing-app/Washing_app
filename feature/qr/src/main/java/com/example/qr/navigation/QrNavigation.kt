@@ -8,6 +8,15 @@ import com.example.qr.ui.QrScreen
 
 fun NavGraphBuilder.qrGraph(navController: NavController) {
     composable(Screen.Qr.route) {
-        QrScreen()
+        QrScreen(
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onMachineOpened = {
+                navController.navigate(Screen.Machines.route) {
+                    launchSingleTop = true
+                }
+            }
+        )
     }
 }

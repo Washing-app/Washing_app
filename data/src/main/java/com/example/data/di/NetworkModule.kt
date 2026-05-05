@@ -3,6 +3,7 @@ package com.example.data.di
 import com.example.data.remote.api.AuthApi
 import com.example.data.remote.api.BookingApi
 import com.example.data.remote.api.MachinesApi
+import com.example.data.remote.api.PaymentApi
 import com.example.data.remote.interceptor.AuthInterceptor
 import dagger.Module
 import dagger.Provides
@@ -59,5 +60,11 @@ object NetworkModule {
     @Singleton
     fun provideBookingApi(retrofit: Retrofit): BookingApi {
         return retrofit.create(BookingApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providePaymentApi(retrofit: Retrofit): PaymentApi {
+        return retrofit.create(PaymentApi::class.java)
     }
 }

@@ -1,5 +1,6 @@
 package com.example.data.remote.api
 
+import com.example.data.remote.dto.BookingItemDto
 import com.example.data.remote.dto.CreateBookingRequest
 import com.example.data.remote.dto.MachineDto
 import com.example.data.remote.dto.MachineSlotDto
@@ -37,5 +38,5 @@ interface MachinesApi {
     @POST("bookings")
     suspend fun createBooking(
         @Body request: CreateBookingRequest
-    )
+    ): BookingItemDto
 }

@@ -1,5 +1,6 @@
 package com.example.machines.ui.component
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,22 +9,27 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.machines.ui.BookingConfirmationUi
 import com.example.machines.ui.BookingFinishMode
 import com.example.machines.ui.BookingFinishUi
 
@@ -31,18 +37,61 @@ import com.example.machines.ui.BookingFinishUi
 @Composable
 fun BookingConfirmationSheet(
     ui: BookingFinishUi,
-    onCloseToMain: () -> Unit,
+    onCancelConfirmed: () -> Unit,
     onPayNow: () -> Unit,
     onPayLater: () -> Unit,
-    onPayExisting: () -> Unit,
-    onReturn: () -> Unit
+    onPayExisting: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = { it != SheetValue.Hidden }
+    )
+
+    var showCancelDialog by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = true) {
+    }
+
+    if (showCancelDialog) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = {
+                Text("Отмена брони")
+            },
+            text = {
+                Text(
+                    "Если не произведёте оплату сейчас, то бронь не будет подтверждена. Вы точно уверены, что хотите отменить бронь?"
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCancelDialog = false
+                        onCancelConfirmed()
+                    }
+                ) {
+                    Text("Да")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showCancelDialog = false
+                    }
+                ) {
+                    Text("Нет")
+                }
+            }
+        )
+    }
 
     ModalBottomSheet(
         onDismissRequest = {},
         sheetState = sheetState,
-        dragHandle = null
+        dragHandle = null,
+        properties = ModalBottomSheetProperties(
+            shouldDismissOnBackPress = false
+        )
     ) {
         Column(
             modifier = Modifier
@@ -59,8 +108,11 @@ fun BookingConfirmationSheet(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onCloseToMain) {
-                        Icon(Icons.Default.Close, contentDescription = "Закрыть")
+                    IconButton(onClick = { showCancelDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Закрыть"
+                        )
                     }
                 }
             )
@@ -80,18 +132,7 @@ fun BookingConfirmationSheet(
             }
 
             when (ui.mode) {
-                BookingFinishMode.FREE_SUCCESS -> {
-                    Button(
-                        onClick = onReturn,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Text("Вернуться")
-                    }
-                }
-
-                BookingFinishMode.PAY_CHOICE -> {
+                BookingFinishMode.FIRST_BOOKING -> {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -111,6 +152,17 @@ fun BookingConfirmationSheet(
                         ) {
                             Text("Оплатить позже")
                         }
+                    }
+                }
+
+                BookingFinishMode.REQUIRE_PAYMENT -> {
+                    Button(
+                        onClick = onPayNow,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text("Оплатить")
                     }
                 }
 

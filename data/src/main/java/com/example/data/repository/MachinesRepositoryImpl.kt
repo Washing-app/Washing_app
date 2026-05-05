@@ -50,12 +50,12 @@ class MachinesRepositoryImpl @Inject constructor(
     override suspend fun createBooking(
         slotId: Long,
         washTypeId: Long
-    ) {
-        api.createBooking(
+    ): String {
+        return api.createBooking(
             CreateBookingRequest(
                 slotId = slotId,
                 washTypeId = washTypeId
             )
-        )
+        ).id
     }
 }

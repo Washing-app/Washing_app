@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.domain.model.WashProgram
@@ -39,6 +41,7 @@ import com.example.machines.ui.component.FiltersBottomSheet
 import com.example.machines.ui.component.MachineCard
 import com.example.ui.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MachinesScreen(
     onItemClick: (WashProgram) -> Unit
@@ -50,6 +53,8 @@ fun MachinesScreen(
         containerColor = colorResource(id = R.color.background),
         topBar = {
             SearchTopBar(
+                query = viewModel.searchQuery,
+                onQueryChange = viewModel::onSearchQueryChange,
                 onFilterClick = { showFilters = true }
             )
         }
@@ -87,62 +92,70 @@ fun MachinesScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(viewModel.filteredPrograms) { program ->
-                        MachineCard(program, onItemClick)
+                        MachineCard(
+                            program = program,
+                            onClick = onItemClick
+                        )
                     }
                 }
             }
         }
-        }
+    }
 
     if (showFilters) {
         FiltersBottomSheet(
             initialState = viewModel.filters,
             onApply = { newFilters ->
                 viewModel.applyFilters(newFilters)
+                showFilters = false
             },
             onDismiss = { showFilters = false }
         )
     }
 }
 
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchTopBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
     onFilterClick: () -> Unit
 ) {
-
-    var query by remember { mutableStateOf("") }
-
     TopAppBar(
         title = {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
                 OutlinedTextField(
                     value = query,
-                    onValueChange = { query = it },
+                    onValueChange = onQueryChange,
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("Поиск...") },
                     shape = RoundedCornerShape(16.dp),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text
+                    ),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = colorResource(R.color.input_background),
                         unfocusedContainerColor = colorResource(R.color.input_background),
                         disabledContainerColor = colorResource(R.color.input_background),
-
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         disabledIndicatorColor = Color.Transparent
-                    ),
-                    singleLine = true
+                    )
                 )
 
-                Spacer(Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
                 IconButton(onClick = onFilterClick) {
-                    Icon(Icons.Default.FilterList, contentDescription = "Filters")
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = "Фильтры"
+                    )
                 }
             }
         }

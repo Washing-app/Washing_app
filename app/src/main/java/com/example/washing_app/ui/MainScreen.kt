@@ -50,7 +50,10 @@ fun MainScreen() {
 
     Scaffold(
         bottomBar = {
-            if (currentRoute != Screen.Auth.route) {
+            if (
+                currentRoute != Screen.Auth.route &&
+                currentRoute != Screen.Qr.route
+                ) {
                 BottomBar(navController)
             }
         }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -22,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.common.util.formatDateTimeDisplay
+import com.example.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,19 +82,22 @@ fun BookingDetailScreen(
             Text("Время: ${booking.durationMinutes} мин")
             Text("Температура: ${booking.temperature}°C")
             Text("Цена: ${booking.price} ₽")
-            Text("Дата и время начала: ${formatDateTime(booking.startTime)}")
-            Text("Дата и время окончания: ${formatDateTime(booking.endTime)}")
+            Text("Дата и время начала: ${formatDateTimeDisplay(booking.startTime)}")
+            Text("Дата и время окончания: ${formatDateTimeDisplay(booking.endTime)}")
             Text("Машинка: ${booking.machineName}")
         }
-    }
-}
 
-private fun formatDateTime(dateTime: String): String {
-    return try {
-        val date = dateTime.substring(0, 10)
-        val time = dateTime.substring(11, 16)
-        "$date $time"
-    } catch (e: Exception) {
-        dateTime
+        if (booking.status == "PENDING_PAYMENT") {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    navController.navigate(Screen.Payment.createRoute(booking.id))
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Оплатить")
+            }
+        }
     }
 }

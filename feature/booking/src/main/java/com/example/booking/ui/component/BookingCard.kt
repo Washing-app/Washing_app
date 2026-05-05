@@ -1,17 +1,25 @@
 package com.example.booking.ui.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.common.util.formatDateTimeDisplay
 import com.example.domain.model.BookingItem
 
 @Composable
@@ -20,8 +28,8 @@ fun BookingCard(
     faded: Boolean,
     onClick: (BookingItem) -> Unit
 ) {
-    val baseColor = bookingStatusColor(booking.status)
-    val containerColor = if (faded) baseColor.copy(alpha = 0.55f) else baseColor
+    val statusUi = bookingStatusUi(booking.status)
+    val containerColor = if (faded) Color(0xFFF7F7F7) else Color.White
 
     Card(
         modifier = Modifier
@@ -30,27 +38,44 @@ fun BookingCard(
         colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = booking.machineName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Text(
+                    text = statusUi.label,
+                    color = statusUi.chipText,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(statusUi.chipBackground)
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                )
+            }
+
             Text(
-                text = "${formatDateTime(booking.startTime)} - ${formatTime(booking.endTime)}",
-                style = MaterialTheme.typography.titleMedium
+                text = "${formatDateTimeDisplay(booking.startTime)} - ${formatTime(booking.endTime)}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = "Тип стирки: ${booking.washTypeName}",
+                style = MaterialTheme.typography.bodyMedium
             )
             Text(
                 text = "Цена: ${booking.price} ₽",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
-    }
-}
-
-private fun formatDateTime(dateTime: String): String {
-    return try {
-        val date = dateTime.substring(0, 10)
-        val time = dateTime.substring(11, 16)
-        "$date $time"
-    } catch (e: Exception) {
-        dateTime
     }
 }
 
