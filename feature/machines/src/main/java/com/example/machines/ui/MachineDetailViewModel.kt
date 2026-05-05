@@ -14,11 +14,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import javax.inject.Inject
+import android.content.Context
+import com.example.common.util.notification.WashingReminderScheduler
+
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 @HiltViewModel
 class MachineDetailViewModel @Inject constructor(
     private val repository: MachinesRepository,
-    private val storage: TokenStorage
+    private val storage: TokenStorage,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     var program by mutableStateOf<WashProgram?>(null)
@@ -151,9 +156,15 @@ class MachineDetailViewModel @Inject constructor(
                 }
 
                 if (!prepare.paymentRequired) {
-                    repository.createBooking(
+                    val bookingId = repository.createBooking(
                         slotId = currentSlot.id,
                         washTypeId = currentProgram.id
+                    )
+
+                    WashingReminderScheduler(context).schedule(
+                        bookingId = bookingId,
+                        startTime = currentSlot.startTime,
+                        endTime = currentSlot.endTime
                     )
 
                     bookingFinishUi = BookingFinishUi(
@@ -206,6 +217,11 @@ class MachineDetailViewModel @Inject constructor(
                     slotId = currentSlot.id,
                     washTypeId = currentProgram.id
                 )
+                WashingReminderScheduler(context).schedule(
+                    bookingId = bookingId,
+                    startTime = currentSlot.startTime,
+                    endTime = currentSlot.endTime
+                )
                 loadSlots(currentMachine.id, currentDate)
                 selectedSlot = null
                 bookingFinishUi = null
@@ -219,14 +235,10 @@ class MachineDetailViewModel @Inject constructor(
         bookingFinishUi = null
     }
 
-    fun dismissBookingConfirmation() {
-        bookingConfirmation = null
-    }
-
     private fun formatTime(dateTime: String): String {
         return try {
             dateTime.substring(11, 16)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             dateTime
         }
     }

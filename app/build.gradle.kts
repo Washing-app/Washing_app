@@ -56,6 +56,7 @@ dependencies {
     implementation(project(":feature:qr"))
     implementation(project(":feature:profile"))
     implementation(project(":core:ui"))
+    implementation(project(":core:common"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
