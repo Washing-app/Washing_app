@@ -14,5 +14,7 @@ fun MachineSlotDto.toDomain() = MachineSlot(
     id = id,
     startTime = startTime,
     endTime = endTime,
-    isBooked = isBooked
+    isBooked = isBooked,
+    isHeld = isHeld,
+    heldByMe = heldByMe
 )

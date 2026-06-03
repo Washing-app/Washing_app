@@ -24,4 +24,7 @@ interface MachinesRepository {
         slotId: Long,
         washTypeId: Long
     ): String
+    suspend fun holdSlot(slotId: Long)
+
+    suspend fun releaseMyHold()
 }

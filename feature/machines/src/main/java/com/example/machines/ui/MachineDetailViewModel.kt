@@ -15,7 +15,12 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import javax.inject.Inject
 import android.content.Context
+import android.util.Log
 import com.example.common.util.notification.WashingReminderScheduler
+import com.example.machines.MachineSlotsWebSocketClient
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 import dagger.hilt.android.qualifiers.ApplicationContext
 
@@ -26,6 +31,7 @@ class MachineDetailViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    private var webSocketClient: MachineSlotsWebSocketClient? = null
     var program by mutableStateOf<WashProgram?>(null)
         private set
 
@@ -124,8 +130,37 @@ class MachineDetailViewModel @Inject constructor(
     }
 
     fun selectSlot(slot: MachineSlot) {
-        selectedSlot = slot
-        bookingConfirmation = null
+        if (slot.isBooked) {
+            errorMessage = "Этот слот уже забронирован"
+            return
+        }
+
+        if (slot.isHeld && !slot.heldByMe) {
+            errorMessage = "Кажется этот слот выбрал другой человек"
+            return
+        }
+
+        val machine = selectedMachine ?: return
+        val date = selectedDate ?: return
+
+        viewModelScope.launch {
+            try {
+                repository.holdSlot(slot.id)
+
+                selectedSlot = slot.copy(
+                    isHeld = true,
+                    heldByMe = true
+                )
+
+                bookingConfirmation = null
+                loadSlots(machine.id, date)
+
+            } catch (e: Exception) {
+                errorMessage = "Кажется этот слот выбрал другой человек"
+                selectedSlot = null
+                loadSlots(machine.id, date)
+            }
+        }
     }
 
     fun bookSelectedSlot() {
@@ -160,6 +195,7 @@ class MachineDetailViewModel @Inject constructor(
                         slotId = currentSlot.id,
                         washTypeId = currentProgram.id
                     )
+                    repository.releaseMyHold()
 
                     WashingReminderScheduler(context).schedule(
                         bookingId = bookingId,
@@ -241,5 +277,70 @@ class MachineDetailViewModel @Inject constructor(
         } catch (_: Exception) {
             dateTime
         }
+    }
+
+    fun releaseSelectedSlot() {
+        viewModelScope.launch {
+            try {
+                repository.releaseMyHold()
+            } catch (_: Exception) {
+            } finally {
+                selectedSlot = null
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+
+        webSocketClient?.disconnect()
+
+        viewModelScope.launch {
+            try {
+                repository.releaseMyHold()
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun connectSlotUpdates() {
+        if (webSocketClient != null) return
+
+        webSocketClient = MachineSlotsWebSocketClient { _, _, _ ->
+            val machine = selectedMachine
+            val date = selectedDate
+
+            if (machine != null && date != null) {
+                viewModelScope.launch {
+                    loadSlots(machine.id, date)
+                }
+            }
+        }
+
+        webSocketClient?.connect()
+    }
+
+    fun disconnectSlotUpdates() {
+        webSocketClient?.disconnect()
+        webSocketClient = null
+    }
+
+    private fun selectedDateToApiFormat(): String? {
+        val date = selectedDate ?: return null
+
+        return try {
+            val formatterInput = java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")
+            val formatterOutput = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE
+
+            java.time.LocalDate
+                .parse(date, formatterInput)
+                .format(formatterOutput)
+        } catch (e: Exception) {
+            date
+        }
+    }
+
+    fun clearError() {
+        errorMessage = null
     }
 }

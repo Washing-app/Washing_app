@@ -8,6 +8,7 @@ import com.example.data.remote.dto.PrepareBookingRequest
 import com.example.data.remote.dto.PrepareBookingResponse
 import com.example.data.remote.dto.WashProgramDto
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -39,4 +40,12 @@ interface MachinesApi {
     suspend fun createBooking(
         @Body request: CreateBookingRequest
     ): BookingItemDto
+
+    @POST("slot-holds/{slotId}")
+    suspend fun holdSlot(
+        @Path("slotId") slotId: Long
+    )
+
+    @DELETE("slot-holds/my")
+    suspend fun releaseMyHold()
 }

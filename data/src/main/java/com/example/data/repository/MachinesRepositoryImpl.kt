@@ -58,4 +58,12 @@ class MachinesRepositoryImpl @Inject constructor(
             )
         ).id
     }
+
+    override suspend fun holdSlot(slotId: Long) {
+        api.holdSlot(slotId)
+    }
+
+    override suspend fun releaseMyHold() {
+        api.releaseMyHold()
+    }
 }

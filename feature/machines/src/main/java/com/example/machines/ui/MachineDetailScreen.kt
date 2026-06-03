@@ -1,5 +1,6 @@
 package com.example.machines.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
@@ -32,6 +34,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,11 +46,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.domain.model.MachineSlot
 import com.example.machines.ui.component.BookingConfirmationSheet
 import com.example.machines.ui.component.MachinesBottomSheet
 import com.example.navigation.Screen
 import java.time.Instant
 import java.time.ZoneId
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.BorderStroke
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,9 +63,20 @@ fun MachineDetailScreen(
     navController: NavController
 ) {
     val viewModel: MachineDetailViewModel = hiltViewModel()
+    val slotsGridState = rememberLazyGridState()
+    val context = LocalContext.current
 
     LaunchedEffect(programId) {
         viewModel.loadProgram(programId)
+    }
+    LaunchedEffect(Unit) {
+        viewModel.connectSlotUpdates()
+    }
+    LaunchedEffect(viewModel.errorMessage) {
+        viewModel.errorMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel.clearError()
+        }
     }
 
     val program = viewModel.program ?: return
@@ -138,132 +156,204 @@ fun MachineDetailScreen(
 
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(4),
+                    state = slotsGridState,
                     modifier = Modifier.height(220.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(viewModel.slots.filter { !it.isBooked }) { slot ->
-                        val isSelected = viewModel.selectedSlot?.id == slot.id
-
-                        OutlinedButton(
-                            onClick = { viewModel.selectSlot(slot) },
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = if (isSelected)
-                                    MaterialTheme.colorScheme.primary
-                                else Color.Transparent
-                            )
-                        ) {
-                            Text(
-                                formatTime(slot.startTime),
-                                color = if (isSelected) Color.White else Color.Unspecified
-                            )
-                        }
+                    items(
+                        items = viewModel.slots,
+                        key = { slot -> slot.id }
+                    ) { slot ->
+                        SlotButton(
+                            slot = slot,
+                            isSelected = viewModel.selectedSlot?.id == slot.id,
+                            onClick = {
+                                viewModel.selectSlot(slot)
+                            }
+                        )
                     }
                 }
             }
-            Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
 
-            Button(
-                onClick = { viewModel.bookSelectedSlot() },
-                enabled = viewModel.selectedSlot != null && !viewModel.isBooking,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    if (viewModel.isBooking) "Бронирование..."
-                    else "Забронировать"
-                )
-            }
-        }
-    }
-    if (showDatePicker) {
-        val datePickerState = rememberDatePickerState()
-
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val millis = datePickerState.selectedDateMillis
-                        if (millis != null) {
-                            val localDate = Instant.ofEpochMilli(millis)
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
-
-                            val formatted = localDate.format(
-                                java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")
-                            )
-
-                            viewModel.selectDate(formatted)
-                        }
-                        showDatePicker = false
-                    }
+                Button(
+                    onClick = { viewModel.bookSelectedSlot() },
+                    enabled = viewModel.selectedSlot != null && !viewModel.isBooking,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("ОК")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Отмена")
+                    Text(
+                        if (viewModel.isBooking) "Бронирование..."
+                        else "Забронировать"
+                    )
                 }
             }
-        ) {
-            DatePicker(state = datePickerState)
         }
-    }
-    if (showMachines) {
-        MachinesBottomSheet(
-            machines = viewModel.machines,
-            onApply = { machine ->
-                viewModel.selectMachine(machine)
-                showMachines = false
-            },
-            onDismiss = { showMachines = false }
-        )
-    }
-    viewModel.bookingFinishUi?.let { ui ->
-        BookingConfirmationSheet(
-            ui = ui,
-            onCancelConfirmed = {
-                viewModel.dismissBookingFinishUi()
-                navController.navigate(Screen.Machines.route) {
-                    popUpTo(Screen.Machines.route) { inclusive = false }
-                    launchSingleTop = true
-                }
-            },
-            onPayNow = {
-                val existingBookingId = ui.bookingIdForPayment
+        if (showDatePicker) {
+            val datePickerState = rememberDatePickerState()
 
-                if (existingBookingId != null) {
-                    navController.navigate(Screen.Payment.createRoute(existingBookingId))
-                } else {
-                    viewModel.createPaidBookingAndOpenPayment { bookingId ->
-                        navController.navigate(Screen.Payment.createRoute(bookingId))
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val millis = datePickerState.selectedDateMillis
+                            if (millis != null) {
+                                val localDate = Instant.ofEpochMilli(millis)
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate()
+
+                                val formatted = localDate.format(
+                                    java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                                )
+
+                                viewModel.selectDate(formatted)
+                            }
+                            showDatePicker = false
+                        }
+                    ) {
+                        Text("ОК")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Отмена")
                     }
                 }
-            },
-            onPayLater = {
-                viewModel.finishFirstBookingAndGoHome {
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+        if (showMachines) {
+            MachinesBottomSheet(
+                machines = viewModel.machines,
+                onApply = { machine ->
+                    viewModel.selectMachine(machine)
+                    showMachines = false
+                },
+                onDismiss = { showMachines = false }
+            )
+        }
+        viewModel.bookingFinishUi?.let { ui ->
+            BookingConfirmationSheet(
+                ui = ui,
+                onCancelConfirmed = {
+                    viewModel.dismissBookingFinishUi()
                     navController.navigate(Screen.Machines.route) {
                         popUpTo(Screen.Machines.route) { inclusive = false }
                         launchSingleTop = true
                     }
+                },
+                onPayNow = {
+                    val existingBookingId = ui.bookingIdForPayment
+
+                    if (existingBookingId != null) {
+                        navController.navigate(Screen.Payment.createRoute(existingBookingId))
+                    } else {
+                        viewModel.createPaidBookingAndOpenPayment { bookingId ->
+                            navController.navigate(Screen.Payment.createRoute(bookingId))
+                        }
+                    }
+                },
+                onPayLater = {
+                    viewModel.finishFirstBookingAndGoHome {
+                        navController.navigate(Screen.Machines.route) {
+                            popUpTo(Screen.Machines.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                },
+                onPayExisting = {
+                    val existingBookingId =
+                        ui.bookingIdForPayment ?: return@BookingConfirmationSheet
+                    navController.navigate(Screen.Payment.createRoute(existingBookingId))
                 }
-            },
-            onPayExisting = {
-                val existingBookingId = ui.bookingIdForPayment ?: return@BookingConfirmationSheet
-                navController.navigate(Screen.Payment.createRoute(existingBookingId))
+            )
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                viewModel.disconnectSlotUpdates()
+                viewModel.releaseSelectedSlot()
             }
+        }
+    }
+
+@Composable
+fun SlotButton(
+    slot: MachineSlot,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Log.d(
+        "SlotButton",
+        "slot=${slot.id}, isHeld=${slot.isHeld}, heldByMe=${slot.heldByMe}, isBooked=${slot.isBooked}"
+    )
+    val context = LocalContext.current
+
+    val isLockedByOther = slot.isHeld && !slot.heldByMe
+    val isBooked = slot.isBooked
+
+    OutlinedButton(
+        onClick = {
+            when {
+                isLockedByOther -> {
+                    Toast.makeText(
+                        context,
+                        "Этот слот выбрал другой человек",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                isBooked -> {
+                    Toast.makeText(
+                        context,
+                        "Этот слот уже забронирован",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                else -> {
+                    onClick()
+                }
+            }
+        },
+        enabled = true,
+        modifier = Modifier.fillMaxWidth(),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = when {
+                isSelected -> MaterialTheme.colorScheme.primary
+                isLockedByOther -> Color(0xFFFFE0B2)
+                isBooked -> Color.LightGray
+                else -> Color.Transparent
+            },
+            contentColor = when {
+                isSelected -> Color.White
+                isLockedByOther -> Color(0xFFE65100)
+                isBooked -> Color.DarkGray
+                else -> MaterialTheme.colorScheme.onSurface
+            }
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = when {
+                isSelected -> MaterialTheme.colorScheme.primary
+                isLockedByOther -> Color(0xFFFF9800)
+                isBooked -> Color.Gray
+                else -> MaterialTheme.colorScheme.outline
+            }
+        )
+    ) {
+        Text(
+            text = formatTime(slot.startTime)
         )
     }
 }
 
 
-fun formatTime(dateTime: String): String {
-    return try {
-        dateTime.substring(11, 16)
-    } catch (e: Exception) {
-        dateTime
+    fun formatTime(dateTime: String): String {
+        return try {
+            dateTime.substring(11, 16)
+        } catch (e: Exception) {
+            dateTime
+        }
     }
-}
